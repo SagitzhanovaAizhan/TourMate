@@ -9,6 +9,8 @@ struct ProfileView: View {
     @State private var showEdit = false
     @State private var showMyRequests = false
     @State private var showMyTours = false
+    @State private var showPrivacyPolicy = false
+    @State private var showFaq = false
 
     var body: some View {
         NavigationView {
@@ -60,8 +62,12 @@ struct ProfileView: View {
                     profileRow(title: "My tours", action: {
                         showMyTours = true
                     })
-                    profileRow(title: "Privacy Policy", action: {})
-                    profileRow(title: "FAQ", action: {})
+                    profileRow(title: "Privacy Policy", action: {
+                        showPrivacyPolicy = true
+                    })
+                    profileRow(title: "FAQ", action: {
+                        showFaq = true
+                    })
                     Button(action: {
                         sessionManager.signOut()
                     }) {
@@ -102,6 +108,14 @@ struct ProfileView: View {
             }
             .sheet(isPresented: $showMyTours) {
                 RequestsView(viewState: .tours)
+                    .presentationDragIndicator(.visible)
+            }
+            .sheet(isPresented: $showPrivacyPolicy) {
+                PrivacyPolicyView()
+                    .presentationDragIndicator(.visible)
+            }
+            .sheet(isPresented: $showFaq) {
+                FAQView()
                     .presentationDragIndicator(.visible)
             }
         }
