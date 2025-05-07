@@ -3,13 +3,18 @@ import SwiftUI
 struct SearchView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var searchText = ""
-    
-    private let recommendations = [
-        "Almaty City Tour",
-        "Big Almaty Lake",
-        "Kok-Tobe Park",
-        "Medeu Skating Rink"
-    ]
+    let requests: [Request]
+    var onSelect: (Request) -> Void
+
+    private var filteredRequests: [Request] {
+        if searchText.isEmpty {
+            return requests
+        } else {
+            return requests.filter {
+                $0.title.lowercased().contains(searchText.lowercased())
+            }
+        }
+    }
 
     var body: some View {
         VStack(spacing: 16) {
@@ -17,9 +22,7 @@ struct SearchView: View {
                 Image(systemName: "magnifyingglass")
                     .foregroundColor(.gray)
                 TextField("Search", text: $searchText)
-                Button(action: {
-                    searchText = ""
-                }) {
+                Button(action: { searchText = "" }) {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundColor(.gray)
                 }
@@ -29,42 +32,41 @@ struct SearchView: View {
             .cornerRadius(12)
             .padding(.horizontal)
             .padding(.top)
-            HStack {
-                Text("Recommendations")
-                    .font(.custom(AppFont.bold, size: 18))
-                    .foregroundColor(.black)
-                    .padding(.horizontal)
-                Spacer()
-            }
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 16) {
-                    ForEach(recommendations, id: \.self) { recommendation in
-                        VStack {
-                            RoundedRectangle(cornerRadius: 16)
-                                .fill(Color.white)
-                                .frame(width: 160, height: 120)
-                                .overlay(
-                                    Text(recommendation)
-                                        .font(.custom(AppFont.regular, size: 14))
-                                        .foregroundColor(.black)
-                                        .padding(),
-                                    alignment: .bottomLeading
-                                )
+
+            if filteredRequests.isEmpty {
+                Text("Nothing found")
+                    .foregroundColor(.gray)
+                    .padding()
+            } else {
+                ScrollView {
+                    LazyVStack(spacing: 8) {
+                        ForEach(filteredRequests) { request in
+                            Button(action: {
+                                onSelect(request)
+                                dismiss()
+                            }) {
+                                HStack {
+                                    Image(systemName: "mappin.circle.fill")
+                                        .foregroundColor(.blue)
+                                    Text(request.title)
+                                        .foregroundColor(.primary)
+                                    Spacer()
+                                }
+                                .padding()
+                                .background(Color.white)
+                                .cornerRadius(12)
+                            }
+                            .padding(.horizontal)
                         }
                     }
                 }
-                .padding(.horizontal)
             }
-            .padding(.bottom, 20)
+
             Spacer()
         }
-        .background(Color(.systemGray5))
+        .background(Color(.systemGray6))
         .ignoresSafeArea(edges: .bottom)
         .navigationTitle("")
         .navigationBarHidden(true)
     }
-}
-
-#Preview {
-    SearchView()
 }

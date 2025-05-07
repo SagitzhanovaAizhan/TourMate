@@ -3,8 +3,9 @@ import CoreLocation
 
 class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     private let manager = CLLocationManager()
-
+    
     @Published var userLocation: CLLocation?
+    var onLocationUpdate: ((CLLocation) -> Void)?
 
     override init() {
         super.init()
@@ -18,7 +19,10 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     }
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        userLocation = locations.first
+        if let location = locations.first {
+            userLocation = location
+            onLocationUpdate?(location)
+        }
     }
 
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {

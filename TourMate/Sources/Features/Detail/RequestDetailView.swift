@@ -76,6 +76,7 @@ struct RequestDetailView: View {
                         }
                     }
                 }
+                .frame(maxWidth: .infinity)
                 .padding()
                 .background(Color(.systemGray6))
                 .cornerRadius(12)

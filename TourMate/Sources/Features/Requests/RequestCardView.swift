@@ -2,6 +2,7 @@ import SwiftUI
 
 struct RequestCardView: View {
     let request: Request
+    let isLikeVisible: Bool
     let isLiked: Bool
     let onLikeTapped: () -> Void
     
@@ -22,9 +23,11 @@ struct RequestCardView: View {
                         .font(.custom(AppFont.bold, size: 16))
                         .lineLimit(1)
                     Spacer()
-                    Button(action: onLikeTapped) {
-                        Image(systemName: isLiked ? "heart.fill" : "heart")
-                            .foregroundColor(isLiked ? .red : .gray)
+                    if isLikeVisible {
+                        Button(action: onLikeTapped) {
+                            Image(systemName: isLiked ? "heart.fill" : "heart")
+                                .foregroundColor(isLiked ? .red : .gray)
+                        }
                     }
                 }
                 Text(request.description)

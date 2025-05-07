@@ -3,13 +3,16 @@ import FirebaseAuth
 
 struct ProfileView: View {
     @EnvironmentObject var sessionManager: SessionManager
+    @State private var name: String?
+    @State private var email: String?
+    @State private var photoUrl: URL?
     @State private var showEdit = false
-    @State private var user = Auth.auth().currentUser
     @State private var showMyRequests = false
+    @State private var showMyTours = false
 
     var body: some View {
         NavigationView {
-            VStack(spacing: 16) {
+            ScrollView {
                 ZStack {
                     VStack(spacing: 8) {
                         Text("My profile")
@@ -21,7 +24,7 @@ struct ProfileView: View {
                                 .frame(width: 100, height: 100)
                                 .shadow(radius: 3)
 
-                            if let url = user?.photoURL {
+                            if let url = photoUrl {
                                 AsyncImage(url: url) { image in
                                     image
                                         .resizable()
@@ -42,9 +45,9 @@ struct ProfileView: View {
                     }
                     .frame(maxWidth: .infinity)
                 }
-                Text(user?.displayName ?? "No Name")
+                Text(name ?? "No Name")
                     .font(.custom(AppFont.bold, size: 20))
-                Text(user?.email ?? "example@email.com")
+                Text(email ?? "example@email.com")
                     .foregroundColor(.gray)
                     .font(.custom(AppFont.regular, size: 16))
                 VStack(spacing: 12) {
@@ -53,6 +56,9 @@ struct ProfileView: View {
                     })
                     profileRow(title: "My requests", action: {
                         showMyRequests = true
+                    })
+                    profileRow(title: "My tours", action: {
+                        showMyTours = true
                     })
                     profileRow(title: "Privacy Policy", action: {})
                     profileRow(title: "FAQ", action: {})
@@ -72,17 +78,32 @@ struct ProfileView: View {
             }
             .background(Color.white)
             .navigationBarHidden(true)
-            .sheet(isPresented: $showEdit, onDismiss: {
-                user = Auth.auth().currentUser
-            }) {
-                ProfileEditView()
-            }
-            .background(
-                NavigationLink(destination: RequestsView(viewState: .myRequests), isActive: $showMyRequests) {
-                    EmptyView()
+            .refreshable {
+                if let user = Auth.auth().currentUser {
+                    name = user.displayName
+                    email = user.email
+                    photoUrl = user.photoURL
                 }
-                .hidden()
-            )
+            }
+            .onAppear {
+                if let user = Auth.auth().currentUser {
+                    name = user.displayName
+                    email = user.email
+                    photoUrl = user.photoURL
+                }
+            }
+            .sheet(isPresented: $showEdit) {
+                ProfileEditView()
+                    .presentationDragIndicator(.visible)
+            }
+            .sheet(isPresented: $showMyRequests) {
+                RequestsView(viewState: .requests)
+                    .presentationDragIndicator(.visible)
+            }
+            .sheet(isPresented: $showMyTours) {
+                RequestsView(viewState: .tours)
+                    .presentationDragIndicator(.visible)
+            }
         }
     }
 

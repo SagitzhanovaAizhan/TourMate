@@ -5,13 +5,14 @@ struct RequestsView: View {
     @StateObject private var viewModel = RequestsViewModel()
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ScrollView {
                 LazyVStack(spacing: 16) {
                     ForEach(viewModel.filteredRequests(for: viewState)) { request in
                         NavigationLink(destination: RequestDetailView(request: request)) {
                             RequestCardView(
                                 request: request,
+                                isLikeVisible: viewState == .saved,
                                 isLiked: viewModel.likedIDs.contains(request.id),
                                 onLikeTapped: {
                                     viewModel.toggleLike(for: request.id)
@@ -20,7 +21,7 @@ struct RequestsView: View {
                         }
                         .buttonStyle(PlainButtonStyle())
                         .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                            if viewState == .myRequests {
+                            if viewState != .saved {
                                 Button(role: .destructive) {
                                     viewModel.deleteRequest(id: request.id)
                                 } label: {
@@ -32,6 +33,10 @@ struct RequestsView: View {
                 }
             }
             .navigationTitle(viewState.title)
+            .refreshable {
+                viewModel.loadRequests()
+                viewModel.loadLiked()
+            }
             .onAppear {
                 viewModel.loadRequests()
                 viewModel.loadLiked()

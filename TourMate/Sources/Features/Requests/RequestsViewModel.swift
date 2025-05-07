@@ -4,14 +4,19 @@ import FirebaseDatabase
 
 @MainActor
 class RequestsViewModel: ObservableObject {
-    enum ViewState {
+    enum ViewState: String {
         case saved
-        case myRequests
+        case requests
+        case tours
         
         var title: String {
             switch self {
-            case .saved: return "Saved"
-            case .myRequests: return "My Requests"
+            case .saved:
+                return "Saved"
+            case .requests:
+                return "My requests"
+            case .tours:
+                return "My tours"
             }
         }
     }
@@ -72,9 +77,16 @@ class RequestsViewModel: ObservableObject {
         switch state {
         case .saved:
             return allRequests.filter { likedIDs.contains($0.id) }
-        case .myRequests:
+        case .requests:
             guard let userId else { return [] }
-            return allRequests.filter { $0.createdBy == userId }
+            return allRequests.filter {
+                $0.category == "Request" && $0.createdBy == userId
+            }
+        case .tours:
+            guard let userId else { return [] }
+            return allRequests.filter {
+                $0.category == "Tour" && $0.createdBy == userId
+            }
         }
     }
     
