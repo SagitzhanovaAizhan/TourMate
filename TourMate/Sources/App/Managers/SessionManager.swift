@@ -4,7 +4,7 @@ import FirebaseAuth
 class SessionManager: ObservableObject {
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
     
-    @Published var isAuthenticated: Bool = Auth.auth().currentUser != nil
+    @Published var isAuthenticated: Bool = false
 
     func signOut() {
         do {

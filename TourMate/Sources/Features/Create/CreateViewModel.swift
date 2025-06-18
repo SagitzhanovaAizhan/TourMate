@@ -32,35 +32,37 @@ class CreateViewModel: ObservableObject {
         }
     }
 
-    func publishRequest(completion: @escaping (Bool) -> Void) {
+    func publishRequest(completion: @escaping (Result<Bool, Error>) -> Void) {
         guard let userId = Auth.auth().currentUser?.uid else { return }
         isUploading = true
         Task {
-            var uploadedURLs: [String] = []
-            uploadedURLs = try await ImageStorageManager
-                .uploadAsJPEG(images: images, path: "requests/", compressionQuality: 0.5)
-                .map { $0.absoluteString }
-            let dbRef = Database.database().reference().child("requests").childByAutoId()
-            let requestId = dbRef.key ?? UUID().uuidString
-            let requestData: [String: Any] = [
-                "id": requestId,
-                "title": title,
-                "description": description,
-                "phoneNumber": phone,
-                "address": address,
-                "category": category.rawValue,
-                "location": [
-                    "latitude": selectedCoordinate?.latitude,
-                    "longitude": selectedCoordinate?.longitude
-                ],
-                "imageUrls": uploadedURLs,
-                "createdBy": userId
-            ]
             do {
+                var uploadedURLs: [String] = []
+                uploadedURLs = try await ImageStorageManager
+                    .uploadAsJPEG(images: images, path: "requests/", compressionQuality: 0.5)
+                    .map { $0.absoluteString }
+                let dbRef = Database.database().reference().child("requests").childByAutoId()
+                let requestId = dbRef.key ?? UUID().uuidString
+                let requestData: [String: Any] = [
+                    "id": requestId,
+                    "title": title,
+                    "description": description,
+                    "phoneNumber": phone,
+                    "address": address,
+                    "category": category.rawValue,
+                    "location": [
+                        "latitude": selectedCoordinate?.latitude,
+                        "longitude": selectedCoordinate?.longitude
+                    ],
+                    "imageUrls": uploadedURLs,
+                    "createdBy": userId
+                ]
                 try await dbRef.setValue(requestData)
-                self.isUploading = false
+                isUploading = false
+                completion(.success(true))
             } catch {
-                completion(false)
+                isUploading = false
+                completion(.failure(error))
             }
         }
     }

@@ -17,6 +17,8 @@ struct CreateView: View {
     @StateObject private var viewModel = CreateViewModel()
     @Environment(\.dismiss) var dismiss
     @State private var showSuccessToast = false
+    @State private var showErrorToast = false
+    @State private var errorMessage = ""
     
     var body: some View {
         ZStack {
@@ -64,13 +66,21 @@ struct CreateView: View {
                         .frame(height: 200)
                         .cornerRadius(12)
                     Button(action: {
-                        viewModel.publishRequest { success in
-                            if success {
-                                withAnimation {
-                                    showSuccessToast = true
+                        viewModel.publishRequest { result in
+                            switch result {
+                            case .success(let success):
+                                if success {
+                                    withAnimation {
+                                        showSuccessToast = true
+                                    }
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                                        dismiss()
+                                    }
                                 }
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                                    dismiss()
+                            case .failure(let error):
+                                errorMessage = error.localizedDescription
+                                withAnimation {
+                                    showErrorToast = true
                                 }
                             }
                         }
@@ -92,6 +102,9 @@ struct CreateView: View {
                     .disabled(viewModel.isUploading || viewModel.title.isEmpty || viewModel.description.isEmpty)
                 }
                 .padding()
+                .onTapGesture {
+                    hideKeyboard()
+                }
             }
             if showSuccessToast {
                 Text("Published successfully!")
@@ -103,6 +116,24 @@ struct CreateView: View {
                     .cornerRadius(8)
                     .transition(.move(edge: .top).combined(with: .opacity))
                     .padding(.bottom, 8)
+            }
+            if showErrorToast {
+                Text(errorMessage)
+                    .font(.custom(AppFont.bold, size: 14))
+                    .foregroundColor(.white)
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(Color.red)
+                    .cornerRadius(8)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                    .padding(.bottom, 8)
+                    .onAppear {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                            withAnimation {
+                                showErrorToast = false
+                            }
+                        }
+                    }
             }
         }
     }
@@ -135,3 +166,11 @@ struct CreateView: View {
 #Preview {
     CreateView()
 }
+
+#if canImport(UIKit)
+extension View {
+    func hideKeyboard() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    }
+}
+#endif

@@ -62,6 +62,40 @@ struct SearchView: View {
                 }
             }
 
+            if !searchText.isEmpty {
+                // Don't show recommendations when searching
+            } else {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Recommended Tours")
+                        .font(.headline)
+                        .padding(.horizontal)
+
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 12) {
+                            ForEach(requests.filter { $0.category == "Tour" }, id: \.id) { tour in
+                                Button(action: {
+                                    onSelect(tour)
+                                    dismiss()
+                                }) {
+                                    ZStack(alignment: .bottomLeading) {
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .fill(Color.white)
+                                            .frame(width: 160, height: 100)
+                                            .shadow(radius: 2)
+
+                                        Text(tour.title)
+                                            .font(.subheadline)
+                                            .foregroundColor(.primary)
+                                            .padding()
+                                    }
+                                }
+                            }
+                        }
+                        .padding(.horizontal)
+                    }
+                }
+            }
+
             Spacer()
         }
         .background(Color(.systemGray6))

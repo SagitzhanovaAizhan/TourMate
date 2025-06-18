@@ -35,6 +35,7 @@ struct TourMateApp: App {
                     AuthView {
                         sessionManager.isAuthenticated = true
                     }
+                    .environmentObject(sessionManager)
                 } else {
                     MainView()
                         .environmentObject(sessionManager)

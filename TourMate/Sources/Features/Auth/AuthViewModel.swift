@@ -14,7 +14,7 @@ class AuthViewModel: ObservableObject {
     @Published var showSuccessAlert = false
     @Published var successMessage: String?
 
-    func signIn() async throws {
+    func signIn() async {
         isLoading = true
         defer {
             isLoading = false
@@ -29,11 +29,11 @@ class AuthViewModel: ObservableObject {
         }
     }
     
-    func register() async throws {
+    func register() async {
         guard password == confirmPassword else {
             authErrorMessage = "Passwords do not match."
             showAuthErrorAlert = true
-            throw NSError(domain: "", code: 400, userInfo: [NSLocalizedDescriptionKey: "Passwords do not match."])
+            return
         }
         isLoading = true
         defer {

@@ -8,17 +8,37 @@ struct MapScreen: View {
     @State private var isSearchPresented = false
     @State private var selectedRequest: Request? = nil
     @State private var requests: [Request] = []
+    @State private var selectedCategory: String? = nil
 
     var body: some View {
         ZStack(alignment: .bottom) {
-            MapView(
-                cameraPosition: $cameraPosition,
-                locationManager: locationManager,
-                requests: requests,
-                onRequestTap: { request in
-                    selectedRequest = request
+            VStack {
+                HStack {
+                    Spacer()
+                    Menu {
+                        Button("All", action: { selectedCategory = nil })
+                        Button("Tours", action: { selectedCategory = "Tour" })
+                        Button("Requests", action: { selectedCategory = "Request" })
+                    } label: {
+                        Label("Filter", systemImage: "line.horizontal.3.decrease.circle")
+                            .padding(10)
+                            .background(Color(.systemGray6))
+                            .cornerRadius(10)
+                    }
                 }
-            )
+                .padding([.horizontal, .top])
+                
+                MapView(
+                    cameraPosition: $cameraPosition,
+                    locationManager: locationManager,
+                    requests: selectedCategory == nil
+                        ? requests
+                        : requests.filter { $0.category == selectedCategory },
+                    onRequestTap: { request in
+                        selectedRequest = request
+                    }
+                )
+            }
             VStack(spacing: 16) {
                 Button(action: {
                     isSearchPresented.toggle()
@@ -36,7 +56,6 @@ struct MapScreen: View {
                     .shadow(radius: 4)
                 }
                 .padding(.horizontal)
-                .background(Color(.systemBackground))
                 .padding([.bottom, .horizontal])
             }
         }

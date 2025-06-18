@@ -2,6 +2,7 @@ import SwiftUI
 
 struct AuthView: View {
     @StateObject private var viewModel = AuthViewModel()
+    @EnvironmentObject var sessionManager: SessionManager
     var onAuthSuccess: () -> Void
 
     var body: some View {
@@ -72,14 +73,12 @@ struct AuthView: View {
             Spacer()
             Button(action: {
                 Task {
-                    do {
-                        if viewModel.isRegisterMode {
-                            try await viewModel.register()
-                            onAuthSuccess()
-                        } else {
-                            try await viewModel.signIn()
-                            onAuthSuccess()
-                        }
+                    if viewModel.isRegisterMode {
+                        await viewModel.register()
+                        sessionManager.checkAuth()
+                    } else {
+                        await viewModel.signIn()
+                        sessionManager.checkAuth()
                     }
                 }
             }) {
@@ -144,7 +143,11 @@ struct AuthView: View {
                 dismissButton: .default(Text("OK"))
             )
         }
-
+        .onChange(of: sessionManager.isAuthenticated) { _, isAuth in
+            if isAuth {
+                onAuthSuccess()
+            }
+        }
     }
 }
 
